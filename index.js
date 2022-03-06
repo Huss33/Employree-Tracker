@@ -120,24 +120,117 @@ const init = () => {
 
                 case "add an employee":
                     console.log("add an employee")
-                    db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) value ("New Employee first name", "new last name", new role_id, new manager_id)', (err, result) => {
+                    db.query(`SELECT * FROM role`, (err, roleRes) => {
                         if (err) {
                             console.log(err);
                         }
-                        console.table(result);
-                        addEmp();
+                        roleRes = roleRes.map((roles) => {
+                            return {
+                                name: roles.title,
+                                value: roles.id
+                            };
+                        })
                     });
+                    db.query(`SELECT first_name, last_name, id FROM employee`, (err, managerRes) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        managerRes = managerRes.map((managers) => {
+                            return {
+                                name: managers.first_name + " " + managers.last_name,
+                                value: managers.id
+                            };
+                        });
+                        inquirer.prompt([
+                            {
+                                type: 'input',
+                                name: 'employeeFirstName',
+                                message: 'enter employee first name'
+                            },
+                            {
+                                type: 'input',
+                                name: 'employeeLastName',
+                                message: 'enter employee last name'
+                            },
+                            {
+                                type: 'list',
+                                name: 'employeeRole',
+                                message: 'select role for employee',
+                                choices: roleRes
+                            },
+                            {
+                                type: 'list',
+                                name: 'employeeManager',
+                                message: 'select employee manager',
+                                choices: managerRes
+                            }
+                        ]).then((answer) => {
+                            db.query(`INSERT INTO employee SET ?`,
+                            {
+                                first_name: answer.employeeFirstName,
+                                last_name: answer.employeeLastName,
+                                role_id: answer.employeeRole,
+                                manager_id: answer.employeeManager
+                            },
+                            (err, result) => {
+                                if (err) {
+                                    console.log(err);
+                                }
+                                console.log('new employee added')
+                                init();
+                            })
+                        })
+                    })
                     break;
 
-                case "update an employee's role":
-                    console.log("update an employee's role")
-                    db.query('UPDATE employee SET role_id = "New Role" WHERE role_id = (id)', (err, result) => {
+                case "update an employee role":
+                    console.log("update an employee role")
+                    db.query(`SELECT * FROM role`, (err, roleRes) => {
                         if (err) {
                             console.log(err);
                         }
-                        console.table(result);
-                        updateEmp();
-                    });
+                        roleRes = roleRes.map((roles) => {
+                            return {
+                                name: roles.title,
+                                value: roles.id
+                            };
+                        });
+                        db.query(`SELECT first_name, last_name, id FROM employee`, (err, managerRes) => {
+                            if (err) {
+                                console.log(err);
+                            }
+                            managerRes = managerRes.map((managers) => {
+                                return {
+                                    name: managers.first_name + " " + managers.last_name,
+                                    value: manager.id
+                                };
+                            });
+                            inquirer.prompt([
+                                {
+                                    type: 'list',
+                                    name: 'employeeManager',
+                                    message: 'select employee you want to update',
+                                    choices: managerRes
+                                },
+                                {
+                                    type: 'list',
+                                    name: 'employeeRole',
+                                    message: 'select new role for employee',
+                                    choices: roleRes
+                                }
+                            ]).then((answer) => {
+                                db.query(`UPDATE employee SET ? WHERE ?`,
+                                [{ role_id: answer.employeeRole }, { id: answer.employeeManager}],
+                                (err, result) => {
+                                    if (err) {
+                                        console.log(err);
+                                    }
+                                    console.log('employee role updated')
+                                    init();
+                                })
+                            })
+                        })
+                    })
                     break;
 
                 case "all done":
