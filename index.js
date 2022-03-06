@@ -1,9 +1,9 @@
 const inquirer = require('inquirer');
-const mysql2 = require('mysql2');
+const mysql = require('mysql2');
 const conTab = require('console.table');
 
 
-const db = mysql2.createConnection(
+const db = mysql.createConnection(
     {
         host: 'localhost',
         user: 'root',
@@ -17,8 +17,8 @@ const init = () => {
      inquirer.prompt([
             {
                 type: "list",
+                name: "name",
                 message: "Select option",
-                name: "optList",
                 choices: ["view all departments", "view all roles", "view all employees", "add a department", "add a role", "add an employee", "update an employee role"]
             },
         ])
@@ -62,7 +62,7 @@ const init = () => {
                     console.log("add a department");
                     inquirer.prompt([
                         {
-                            name: "optList",
+                            name: "name",
                             type: "input",
                             message: "Choose a department to add"
                         }
